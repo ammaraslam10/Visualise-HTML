@@ -8,3 +8,4 @@ This implementation fixes a few issues and adds a few features. It uses a single
 * Moved to a vertical layout
 * Support for tabs added
 * Resized frame position is also kept intact through localStorage
+* If there's a JS Error, a <div> on top is created with error message. write() or writeln() can be used to create or write in that div.
