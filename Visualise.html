@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<style>
+	body{ overflow: hidden; margin: 0; } 
+	#dynamicframe {border:0;width:100%;height:100%;}
+	.expand { width: 100%; height: 100%; }
+	.close { border: none; margin: 0px; padding: 0px; }
+	#resizer { width: 5px; height: 100%; background: #90b94d; border-left:1px solid #333; position:absolute; right: 0; bottom: 0; cursor: col-resize; }
+	#input::-webkit-scrollbar { width: 10px; cursor: pointer; }
+	#input::-webkit-scrollbar-track { background: #f1f1f1; }
+	#input::-webkit-scrollbar-thumb { background: #444; }
+</style>
+
+<title>Visualise HTML</title>
+
+<script type="text/javascript">
+
+var defaultStuff = '<h3>Hello from Visualise HTML!<\/h3>\n' +
+'<p>Type HTML in the textarea, and it will magically appear in the frame on right.<\/p>';
+
+var debugfunc = '<script>function write(text) { var debug = document.getElementById(\'debug\'); ' +
+		'if(debug) { debug.innerHTML+=text; } else {' + 
+		'document.write("<div id=\\"debug\\" style=\\"top:0;left:0;box-sizing:border-box;' + 
+		'background:#222;width:100%;color:#fff;font-family:consolas;padding:5px;' + 
+		'border-bottom:5px solid #666;max-height:50vh;overflow:hidden;overflow-y:auto;position:absolute;\\">\"+text+\"</div>"); } } ' +
+		'function writeln(text) { write(text + \'<br />\'); } ' +
+		'window.onerror = function(error) { writeln(error); }<\/script>';
+var old = '', oldsaved = '';
+var textarea = '';         
+var dynamicframewrap = '';
+
+var editbox, resizer;
+var startX, startWidth, startWidthF;
+
+function initDrag(e) {
+   startX = ((e.clientX/window.innerWidth)*100).toFixed(2);
+   startWidth = parseFloat((editbox.offsetWidth/editbox.offsetParent.offsetWidth)*100);
+   startWidthF = parseFloat((dynamicframewrap.offsetWidth/dynamicframewrap.offsetParent.offsetWidth)*100);
+   document.getElementById("dynamicframe").style.pointerEvents="none";
+   document.body.addEventListener('mousemove', doDrag, false);
+   document.body.addEventListener('mouseup', stopDrag, false);
+}
+
+function doDrag(e) {
+   var difference = parseFloat((e.clientX/window.innerWidth)*100 - startX);
+   editbox.style.width = (startWidth + difference).toFixed(2) + '%';
+   dynamicframewrap.style.width = (startWidthF - difference).toFixed(2) + '%';
+}
+
+function stopDrag(e) {
+    localStorage.setItem("editbox", editbox.style.width);
+    localStorage.setItem("dynamicframewrap", dynamicframewrap.style.width);
+
+    document.getElementById("dynamicframe").style.pointerEvents="all";
+    document.body.removeEventListener('mousemove', doDrag, false);    
+    document.body.removeEventListener('mouseup', stopDrag, false);
+}
+
+function init()
+{
+      
+	textarea = document.getElementById("input");
+
+	editbox = document.getElementById("editbox");
+	
+	resizer = document.getElementById('resizer');
+
+	resizer.addEventListener('mousedown', initDrag, false);
+
+	dynamicframewrap = document.getElementById("dynamicframewrap");
+
+	textarea.value = defaultStuff;
+
+	if(localStorage.getItem("textarea") !== null) {
+		textarea.value = localStorage.getItem("textarea");
+		oldsaved = localStorage.getItem("textarea");
+	}
+
+	update();
+
+	if(localStorage.getItem("editbox") !== null) {
+		editbox.style.width = localStorage.getItem("editbox");
+		dynamicframewrap.style.width = localStorage.getItem("dynamicframewrap");
+	}
+
+	setInterval(function(){ 
+		if(oldsaved != textarea.value) { 
+			resizer.style.background = "#90b94d";
+			oldsaved = textarea.value;
+			localStorage.setItem("textarea", textarea.value);
+		}
+	}, 3000);
+
+	resizer.style.background = "#90b94d";
+}
+
+
+function update()
+{
+	if (old != textarea.value) {
+
+		old = textarea.value;
+
+		dynamicframewrap.innerHTML = '<iframe id="dynamicframe"></iframe>';
+
+		var dynamicframe = document.getElementById("dynamicframe");
+
+		var d = (dynamicframe.contentWindow || dynamicframe.contentDocument.document || dynamicframe.contentDocument).document;
+  
+		d.open();
+
+		d.write(debugfunc+old);
+
+		d.close();
+
+		resizer.style.background = "#aaa";
+	}
+
+  
+	window.setTimeout(update, 150);
+
+}
+</script>
+
+</head>
+
+
+
+<div style="height:100vh">
+  
+<div id="editbox" style="width:50%;float:left;height:100%;display:inline-block;position:relative;">
+	<form class="expand close">
+	<textarea id="input" class="input expand close" style="width:calc(100% - 6px);height: 100%;background: #222; color: #fff; outline:none; font-family: lucida console; resize:none" name="ta" wrap="hard" onkeydown="tab_check(event)" spellcheck="false"></textarea>
+	<div id="resizer" class="resizer"></div>
+	<div id="extraStuff" class="resizer">
+		<div style="position:absolute; bottom:0em; right:16px;background: rgba(0,0,0,0.6);font-family: monospace;padding:5px;color:#fff"><small> 
+			<a href="https://github.com/ammaraslam10/Visualise-HTML" target="_blank" style="color:#fff">Github</a> uwu. 
+			Inspired by <a href="http://www.squarefree.com/" target="_blank" style="color:#fff">Jesse Ruderman</a></small></div>
+	</div>
+</div>
+  
+<div id="dynamicframewrap" style="width:50%;float:left;height:100%;display:inline-block;">
+	
+</div>
+
+<script>
+	document.getElementById("input").focus(); 
+	document.getElementById("input").select();
+	function tab_check(e) { 
+		if (e.which===9) { 
+			e.preventDefault(); 
+			document.execCommand("insertText", false, "\t"); 
+		} 
+	}
+	init();	
+	function links(e) {
+		document.getElementById("extraStuff").style.display='none';
+		editbox.removeEventListener("keydown", links, false);
+	}
+	editbox.addEventListener("keydown", links);
+</script>
+</html>
