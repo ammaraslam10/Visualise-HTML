@@ -1,5 +1,6 @@
-## Visualise HTML. [Try it out.](https://ammaraslam10.github.io/Visualise-HTML/Visualise.html) 
+## Visualise HTML.  
 
+### [Try it out.](https://ammaraslam10.github.io/Visualise-HTML/Visualise.html)
 Inspired by Jesse Ruderman's Real-time HTML Editor
 
 This implementation fixes a few issues and adds a few features. It uses a single frame. The frame itself is created on every rewrite to fix the JS issues.
